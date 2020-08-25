@@ -51,7 +51,7 @@ def load_data(train_path, test_path, gParameters):
 
     df_y_train = df_train[:, 0].astype('int')
     df_y_test = df_test[:, 0].astype('int')
-
+    
     Y_train = np_utils.to_categorical(df_y_train, gParameters['classes'])
     Y_test = np_utils.to_categorical(df_y_test, gParameters['classes'])
 
@@ -60,6 +60,18 @@ def load_data(train_path, test_path, gParameters):
 
     X_train = df_x_train
     X_test = df_x_test
+
+    # check if noise is on
+    if gParameters['add_noise']:
+        # check if we want noise correlated with a feature
+        if gParameters['noise_correlated']:
+            Y_train, y_train_noise_gen = candle.label_flip_correlated(df_y_train,
+                                                                      gParameters['label_noise'], X_train,
+                                                                      gParameters['feature_col'],
+                                                                      gParameters['feature_threshold'])
+        # else add uncorrelated noise
+        else:
+            Y_train, y_train_noise_gen = candle.label_flip(df_y_train, gParameters['label_noise'])
 
     scaler = MaxAbsScaler()
     mat = np.concatenate((X_train, X_test), axis=0)
